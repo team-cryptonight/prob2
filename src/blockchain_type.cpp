@@ -35,32 +35,37 @@ uint160_t uint160_t::operator++(int x)
 // Transaction
 Transaction::Transaction(const uint160_t transaction_id, const uint8_t *data): transaction_id(transaction_id)
 {
-    std::copy(this->data, this->data + 108, data);
+    for (int i = 0; i < 108; i++)
+    {
+        this->data[i] = data[i];
+    }
 }
 
 Transaction::Transaction(const Transaction &other): Transaction(other.transaction_id, other.data) {}
 
 
 // Block
-Block::Block(uint160_t &hash_value, Transactions_t &transactions): block_id(next_block_id++), hash_value(hash_value), transactions(transactions) {}
+Block::Block(uint160_t &hash_value, Transactions_t &transactions): block_id(next_block_id++), hash_value(hash_value), transactions(transactions)
+{
+}
 
 uint160_t Block::next_block_id = 0;
 
 uint160_t Block::hash_block() {
     CryptoPP::SHA3_256 hash;
     
-    hash.Update((const CryptoPP::byte*)block_id.lower_bytes, sizeof(uint32_t));
-    hash.Update((const CryptoPP::byte*)block_id.center_bytes, sizeof(uint64_t));
-    hash.Update((const CryptoPP::byte*)block_id.upper_bytes, sizeof(uint64_t));
+    hash.Update((const CryptoPP::byte*)(&block_id.lower_bytes), sizeof(uint32_t));
+    hash.Update((const CryptoPP::byte*)(&block_id.center_bytes), sizeof(uint64_t));
+    hash.Update((const CryptoPP::byte*)(&block_id.upper_bytes), sizeof(uint64_t));
 
-    hash.Update((const CryptoPP::byte*)hash_value.lower_bytes, sizeof(uint32_t));
-    hash.Update((const CryptoPP::byte*)hash_value.center_bytes, sizeof(uint64_t));
-    hash.Update((const CryptoPP::byte*)hash_value.upper_bytes, sizeof(uint64_t));
+    hash.Update((const CryptoPP::byte*)(&hash_value.lower_bytes), sizeof(uint32_t));
+    hash.Update((const CryptoPP::byte*)(&hash_value.center_bytes), sizeof(uint64_t));
+    hash.Update((const CryptoPP::byte*)(&hash_value.upper_bytes), sizeof(uint64_t));
 
     for (auto &transaction: transactions) {
-        hash.Update((const CryptoPP::byte*)transaction.transaction_id.lower_bytes, sizeof(uint32_t));
-        hash.Update((const CryptoPP::byte*)transaction.transaction_id.center_bytes, sizeof(uint64_t));
-        hash.Update((const CryptoPP::byte*)transaction.transaction_id.upper_bytes, sizeof(uint64_t));
+        hash.Update((const CryptoPP::byte*)(&transaction.transaction_id.lower_bytes), sizeof(uint32_t));
+        hash.Update((const CryptoPP::byte*)(&transaction.transaction_id.center_bytes), sizeof(uint64_t));
+        hash.Update((const CryptoPP::byte*)(&transaction.transaction_id.upper_bytes), sizeof(uint64_t));
         hash.Update((const CryptoPP::byte*)transaction.data, sizeof(uint8_t) * 108);
     }
 

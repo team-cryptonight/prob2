@@ -21,6 +21,7 @@ struct Transaction {
     uint160_t transaction_id;
     uint8_t data[108];
 
+    Transaction() = default;
     Transaction(const uint160_t transaction_id, const uint8_t *data);
     Transaction(const Transaction& other);
 };
