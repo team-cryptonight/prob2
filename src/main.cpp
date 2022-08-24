@@ -11,14 +11,21 @@ union RandomData
     uint32_t words[27];
 };
 
-RandomData& generate_random_data(RandomData &random_data, std::mt19937 &gen)
+Transactions_t& generate_random_transactions(Transactions_t &transactions, std::mt19937 &gen)
 {
-    for (int i = 0; i < 27; i++)
+    uint32_t cnt = 0;
+
+    RandomData random_data;
+    for (auto &transaction: transactions)
     {
-        random_data.words[i] = gen();
+        for (auto &word: random_data.words)
+        {
+            word = gen();
+        }
+        transaction = Transaction(cnt++, random_data.bytes);
     }
 
-    return random_data;
+    return transactions;
 }
 
 int main()
@@ -28,22 +35,19 @@ int main()
     uint32_t cnt = 0;
     RandomData random_data;
 
-    random_data = generate_random_data(random_data, gen);
-
     Transactions_t transactions;
-    for (auto &transaction: transactions)
-    {
-        random_data = generate_random_data(random_data, gen);
-        transaction = Transaction(cnt++, random_data.bytes);
-    }
 
+    transactions = generate_random_transactions(transactions, gen);
     Block genesis_block = generate_genesis_block(transactions);
 
-    std::cout << std::hex 
-        << genesis_block.hash_value.upper_bytes 
-        << genesis_block.hash_value.center_bytes 
-        << genesis_block.hash_value.lower_bytes 
-        << std::endl;
+    transactions = generate_random_transactions(transactions, gen);
+    Block first_block = generate_next_block(genesis_block, transactions);
+
+    transactions = generate_random_transactions(transactions, gen);
+    Block second_block = generate_next_block(first_block, transactions);
+
+    std::cout << std::hex << first_block.hash_value << std::endl;
+    std::cout << std::hex << second_block.hash_value << std::endl;
 
     return 0;
 }
