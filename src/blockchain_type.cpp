@@ -30,6 +30,15 @@ uint160_t uint160_t::operator++(int x)
     return *this;
 }
 
+std::ostream& operator<<(std::ostream &os, const uint160_t &i160)
+{
+    os  << i160.upper_bytes
+        << i160.center_bytes
+        << i160.lower_bytes;
+
+    return os;
+}
+
 
 // Transaction
 Transaction::Transaction(const uint160_t transaction_id, const uint8_t *data): transaction_id(transaction_id)
@@ -68,8 +77,8 @@ uint160_t Block::hash_block() {
         hash.Update((const CryptoPP::byte*)transaction.data, sizeof(uint8_t) * 108);
     }
 
-    CryptoPP::byte digest[TRUNCATE_BIT_LENGTH / 8];
-    hash.TruncatedFinal((CryptoPP::byte*)&digest[0], TRUNCATE_BIT_LENGTH);
+    CryptoPP::byte digest[TRUNCATE_BYTE_LENGTH];
+    hash.TruncatedFinal((CryptoPP::byte*)&digest[0], TRUNCATE_BYTE_LENGTH);
 
     return uint160_t(*reinterpret_cast<uint32_t*>(digest), *reinterpret_cast<uint64_t*>(digest + 4), *reinterpret_cast<uint64_t*>(digest + 12));
 }

@@ -1,9 +1,10 @@
 #pragma once
 
-#include <cstdint>
 #include <array>
+#include <cstdint>
+#include <iostream>
 
-#define TRUNCATE_BIT_LENGTH 160
+#define TRUNCATE_BYTE_LENGTH 20
 
 struct uint160_t {
     uint32_t lower_bytes;
@@ -15,6 +16,8 @@ struct uint160_t {
     uint160_t(uint32_t lower_bytes, uint64_t center_bytes, uint64_t upper_bytes);
     uint160_t(const uint160_t&) = default;
     uint160_t operator++(int x);
+
+    friend std::ostream& operator<<(std::ostream &os, const uint160_t &i160);
 };
 
 struct Transaction {
