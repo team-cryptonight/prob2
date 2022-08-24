@@ -6,9 +6,8 @@
 #include "cryptopp/sha3.h"
 
 // uint160_t
-uint160_t::uint160_t(uint32_t n)
+uint160_t::uint160_t(uint32_t n): lower_bytes(n), center_bytes(0), upper_bytes(0)
 {
-    lower_bytes = n;
 }
 
 uint160_t::uint160_t(uint32_t lower_bytes, uint64_t center_bytes, uint64_t upper_bytes)
