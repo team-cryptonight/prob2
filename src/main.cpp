@@ -4,6 +4,7 @@
 
 #include "blockchain.h"
 #include "blockchain_type.h"
+#include "base58.h"
 
 union RandomData
 {
@@ -46,8 +47,27 @@ int main()
     transactions = generate_random_transactions(transactions, gen);
     Block second_block = generate_next_block(first_block, transactions);
 
-    std::cout << std::hex << first_block.hash_value << std::endl;
-    std::cout << std::hex << second_block.hash_value << std::endl;
+    transactions = generate_random_transactions(transactions, gen);
+    Block third_block = generate_next_block(second_block, transactions);
+
+    std::cout << second_block.hash_value << std::endl;
+    std::cout << third_block.hash_value << std::endl;
+
+    std::cout << verify_blocks(second_block, third_block) << std::endl;
+    
+    second_block.transactions[128].data[64]++;
+
+    std::cout << verify_blocks(second_block, third_block) << std::endl;
+
+    uint x;
+    std::cin >> x;
+
+    uint160_t c(x);
+
+    std::cout << EncodeBase58(c) << std::endl;  
+    std::cout << EncodeBase58(second_block.hash_value) << std::endl;  
+
+
 
     return 0;
 }
