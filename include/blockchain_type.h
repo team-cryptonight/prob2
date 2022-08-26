@@ -17,6 +17,8 @@ struct uint160_t {
     uint160_t(const uint160_t&) = default;
     uint160_t operator++(int x);
 
+    bool operator==(const uint160_t &other);
+
     friend std::ostream& operator<<(std::ostream &os, const uint160_t &i160);
 };
 
@@ -34,8 +36,8 @@ using Transactions_t = std::array<Transaction, 8192>;
 struct Block {
     static uint160_t next_block_id;
 
-    uint160_t block_id;
-    uint160_t hash_value;
+    const uint160_t block_id;
+    const uint160_t hash_value;
     Transactions_t transactions;
 
     Block(uint160_t &hash_value, Transactions_t &transactions);

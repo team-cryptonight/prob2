@@ -14,7 +14,8 @@ Block generate_next_block(Block &prev_block, Transactions_t &transactions) {
     return Block(prev_hash, transactions);
 }
 
-bool verify_blocks(Block target)
+bool verify_blocks(Block &target, Block &next)
 {
-    return false;
+    uint160_t hash_value = target.hash_block();
+    return hash_value == next.hash_value;
 }
