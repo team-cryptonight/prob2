@@ -3,17 +3,16 @@
 #include <array>
 #include <cstdint>
 #include <iostream>
+#include <vector>
 
 #define TRUNCATE_BYTE_LENGTH 20
 
 struct uint160_t {
-    uint32_t lower_bytes;
-    uint64_t center_bytes;
-    uint64_t upper_bytes;
+    uint8_t bytes[20] = {0, };
 
     uint160_t() = default;
     uint160_t(uint32_t n);
-    uint160_t(uint32_t lower_bytes, uint64_t center_bytes, uint64_t upper_bytes);
+    uint160_t(const std::vector<uint8_t> &vch);
     uint160_t(const uint160_t&) = default;
     uint160_t operator++(int x);
 

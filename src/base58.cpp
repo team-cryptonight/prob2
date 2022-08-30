@@ -1,5 +1,7 @@
 #include "base58.h"
 
+#include <cstring>
+
 const char* pszBase58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 
 // https://github.com/bitcoin/bitcoin/blob/master/src/base58.cpp
@@ -7,10 +9,7 @@ std::string EncodeBase58(const uint160_t &input)
 {
     // Skip & count leading zeroes.
     unsigned char bytes[20];
-    *reinterpret_cast<uint32_t *>(bytes) = input.lower_bytes;
-    *reinterpret_cast<uint64_t *>(bytes + 4) = input.center_bytes;
-    *reinterpret_cast<uint64_t *>(bytes + 12) = input.upper_bytes;
-
+    memcpy(bytes, input.bytes, sizeof(bytes));
 
     int zeroes = 0;
     int length = 0; 

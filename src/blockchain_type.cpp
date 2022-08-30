@@ -7,49 +7,46 @@
 #include "cryptopp/sha3.h"
 
 // uint160_t
-uint160_t::uint160_t(uint32_t n) : lower_bytes(n), center_bytes(0), upper_bytes(0)
+uint160_t::uint160_t(uint32_t n) 
 {
+    *reinterpret_cast<uint32_t *>(bytes) = n;
 }
 
-uint160_t::uint160_t(uint32_t lower_bytes, uint64_t center_bytes, uint64_t upper_bytes)
-    : lower_bytes(lower_bytes), center_bytes(center_bytes), upper_bytes(upper_bytes) {}
+uint160_t::uint160_t(const std::vector<uint8_t> &vch)
+{
+    memcpy(bytes, vch.data(), sizeof(bytes));
+}
 
 uint160_t uint160_t::operator++(int x)
 {
-    lower_bytes++;
-    if (lower_bytes)
+    for (auto &byte: bytes)
     {
-        return *this;
+        byte++;
+        if (byte)
+        {
+            return *this;
+        }
     }
-
-    center_bytes++;
-    if (center_bytes)
-    {
-        return *this;
-    }
-
-    upper_bytes++;
 
     return *this;
 }
 
 bool uint160_t::operator==(const uint160_t &other)
 {
-    return this->upper_bytes == other.upper_bytes &&
-        this->center_bytes == other.center_bytes &&
-        this->lower_bytes == other.lower_bytes;
+    return memcmp(bytes, other.bytes, sizeof(bytes)) == 0;
 }
 
 std::ostream &
 operator<<(std::ostream &os, const uint160_t &i160)
 {
     os << std::setfill('0') 
-       << std::setw(16) 
-       << std::hex
-       << i160.upper_bytes
-       << i160.center_bytes
-       << std::setw(8)
-       << i160.lower_bytes;
+       << std::setw(8) 
+       << std::hex;
+
+    for (int offset = 0; offset < 20; offset += 4)
+    {
+        os << *reinterpret_cast<const uint32_t *>(i160.bytes + offset);
+    }
 
     return os;
 }
@@ -76,24 +73,19 @@ uint160_t Block::hash_block()
 {
     CryptoPP::SHA3_256 hash;
 
-    hash.Update((const CryptoPP::byte *)(&block_id.lower_bytes), sizeof(uint32_t));
-    hash.Update((const CryptoPP::byte *)(&block_id.center_bytes), sizeof(uint64_t));
-    hash.Update((const CryptoPP::byte *)(&block_id.upper_bytes), sizeof(uint64_t));
-
-    hash.Update((const CryptoPP::byte *)(&hash_value.lower_bytes), sizeof(uint32_t));
-    hash.Update((const CryptoPP::byte *)(&hash_value.center_bytes), sizeof(uint64_t));
-    hash.Update((const CryptoPP::byte *)(&hash_value.upper_bytes), sizeof(uint64_t));
+    hash.Update(static_cast<const CryptoPP::byte *>(block_id.bytes), sizeof(block_id.bytes));
+    hash.Update(static_cast<const CryptoPP::byte *>(hash_value.bytes), sizeof(hash_value.bytes));
 
     for (auto &transaction : transactions)
     {
-        hash.Update((const CryptoPP::byte *)(&transaction.transaction_id.lower_bytes), sizeof(uint32_t));
-        hash.Update((const CryptoPP::byte *)(&transaction.transaction_id.center_bytes), sizeof(uint64_t));
-        hash.Update((const CryptoPP::byte *)(&transaction.transaction_id.upper_bytes), sizeof(uint64_t));
+        hash.Update(static_cast<const CryptoPP::byte *>(transaction.transaction_id.bytes), sizeof(transaction.transaction_id.bytes));
         hash.Update((const CryptoPP::byte *)transaction.data, sizeof(uint8_t) * 108);
     }
 
-    CryptoPP::byte digest[TRUNCATE_BYTE_LENGTH];
-    hash.TruncatedFinal((CryptoPP::byte *)&digest[0], TRUNCATE_BYTE_LENGTH);
+    std::vector<uint8_t> vch = std::vector<uint8_t>();
+    vch.reserve(TRUNCATE_BYTE_LENGTH);
 
-    return uint160_t(*reinterpret_cast<uint32_t *>(digest), *reinterpret_cast<uint64_t *>(digest + 4), *reinterpret_cast<uint64_t *>(digest + 12));
+    hash.TruncatedFinal((CryptoPP::byte *)(vch.data()), TRUNCATE_BYTE_LENGTH);
+
+    return uint160_t(vch);
 }
