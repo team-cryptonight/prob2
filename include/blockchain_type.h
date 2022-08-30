@@ -1,35 +1,54 @@
 #pragma once
 
-#include <cstdint>
 #include <array>
+#include <cstdint>
+#include <cstring>
+#include <iostream>
+#include <vector>
+
+#define UINT160_BYTE_LENGTH 20
+#define TRUNCATE_BYTE_LENGTH 20
+#define NUM_TX_PER_BLOCK 8192
+#define TX_DATA_BYTE_LENGTH 108
 
 struct uint160_t {
-    uint32_t lower_bytes;
-    uint64_t center_bytes;
-    uint64_t upper_bytes;
+    uint8_t bytes[UINT160_BYTE_LENGTH] = {0, };
 
+    uint160_t() = default;
     uint160_t(uint32_t n);
-    uint160_t(const uint160_t&) = default;
+    uint160_t(const std::vector<uint8_t> &vch);
+    uint160_t(const uint160_t &other);
     uint160_t operator++(int x);
+
+    inline int compare_with(const uint160_t &other) const { return memcmp(bytes, other.bytes, sizeof(bytes)); }
+
+    friend inline bool operator==(const uint160_t &a, const uint160_t &b) { return a.compare_with(b) == 0; }
+    friend inline bool operator!=(const uint160_t &a, const uint160_t &b) { return a.compare_with(b) != 0; }
+    friend inline bool operator<(const uint160_t &a, const uint160_t &b) { return a.compare_with(b) < 0; }
+
+    friend std::ostream& operator<<(std::ostream &os, const uint160_t &i160);
 };
 
-struct transaction {
-    uint160_t transaction_id;
-    uint8_t data[108];
+struct Transaction {
+    uint160_t id;
+    uint8_t data[TX_DATA_BYTE_LENGTH];
+
+    Transaction() = default;
+    Transaction(const uint160_t id, const uint8_t *data);
+    Transaction(const Transaction& other);
 };
 
-using transactions_t = std::array<transaction, 8192>;
+using Transactions_t = std::array<Transaction, NUM_TX_PER_BLOCK>;
 
-struct block {
+struct Block {
     static uint160_t next_block_id;
 
-    uint160_t block_id;
-    uint160_t hash_value;
-    transactions_t transactions;
+    const uint160_t block_id;
+    const uint160_t hash_value;
+    const uint160_t merkle_root;
+    Transactions_t transactions;
 
-    block(uint160_t &hash_value, transactions_t &transactions)
-    : block_id(next_block_id++), hash_value(hash_value), transactions(transactions){}
+    Block(uint160_t &hash_value, uint160_t &merkle_root, Transactions_t &transactions);
 
     uint160_t hash_block();
 };
-

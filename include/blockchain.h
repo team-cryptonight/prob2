@@ -1,9 +1,12 @@
 #pragma once
 
+#include <vector>
+
 #include "blockchain_type.h"
+#include "merkle_tree.h"
 
-block generate_genesis_block(transactions_t transactions);
+Block generate_genesis_block(Transactions_t &transactions, Prover &prover);
 
-block generate_next_block(block &prev_block, transactions_t transactions);
+Block generate_next_block(Block &prev_block, Transactions_t &transactions, Prover &prover);
 
-bool verify_blocks(block target);
+bool verify_blocks(std::vector<Transaction> &transactions, const Block &block, Prover &prover);
