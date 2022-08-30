@@ -7,7 +7,7 @@
 #include "cryptopp/sha3.h"
 
 // MerkleTree
-MerkleTree::MerkleTree(const Block &block)
+MerkleTree::MerkleTree(const Transactions_t &transactions)
 {
     CryptoPP::SHA3_256 hash;
 
@@ -16,7 +16,7 @@ MerkleTree::MerkleTree(const Block &block)
 
     size_t index = NUM_TX_PER_BLOCK;
 
-    for (auto &transaction : block.transactions)
+    for (auto &transaction : transactions)
     {
         hash.Update(transaction.id.bytes, sizeof(transaction.id.bytes));
         hash.Update(transaction.data, sizeof(transaction.data));
@@ -34,6 +34,11 @@ MerkleTree::MerkleTree(const Block &block)
 
         tree[index] = uint160_t(vch);
     }
+}
+
+uint160_t MerkleTree::get_root()
+{
+    return tree[1];
 }
 
 MerkleProof MerkleTree::get_proof(std::vector<uint160_t> &txids)
@@ -75,15 +80,15 @@ MerkleProof MerkleTree::get_proof(std::vector<uint160_t> &txids)
         switch (nodes[index])
         {
         case MerkleProofNodeType::descend:
-            proof.proof_tree.emplace_back(nodes[index << 1], nodes[(index << 1) + 1]);
+            proof.proof_tree.emplace(nodes[index << 1], nodes[(index << 1) + 1]);
             preorder_stack.push((index << 1) + 1);
             preorder_stack.push(index << 1);
             break;
         case MerkleProofNodeType::skip:
-            proof.skipped_hashes.push_back(tree[index]);
+            proof.skipped_hashes.push(tree[index]);
             break;
         case MerkleProofNodeType::verify:
-            proof.txid_perm.push_back(index_to_txid_order.at(index));
+            proof.txid_perm.push(index_to_txid_order.at(index));
             break;
         default:
             break;
@@ -94,9 +99,10 @@ MerkleProof MerkleTree::get_proof(std::vector<uint160_t> &txids)
 }
 
 // Prover
-void Prover::add_tree(Block &block)
+uint160_t Prover::add_tree(const Transactions_t &transactions)
 {
-    trees.push_back(MerkleTree(block));
+    trees.push_back(MerkleTree(transactions));
+    return trees.back().get_root();
 }
 
 MerkleProof Prover::get_proof(std::vector<uint160_t> &txids, size_t block_id)

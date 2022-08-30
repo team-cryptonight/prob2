@@ -1,6 +1,6 @@
 #pragma once
 
-#include <deque>
+#include <queue>
 #include <unordered_map>
 #include <vector>
 
@@ -24,9 +24,9 @@ enum class MerkleProofNodeType
 
 struct MerkleProof
 {
-    std::deque<std::pair<MerkleProofNodeType, MerkleProofNodeType> > proof_tree;
-    std::deque<uint160_t> skipped_hashes;
-    std::vector<size_t> txid_perm;
+    std::queue<std::pair<MerkleProofNodeType, MerkleProofNodeType> > proof_tree;
+    std::queue<uint160_t> skipped_hashes;
+    std::queue<size_t> txid_perm;
 };
 
 class MerkleTree
@@ -35,8 +35,9 @@ class MerkleTree
     std::array<uint160_t, (NUM_TX_PER_BLOCK << 1)> tree;
 
 public:
-    MerkleTree(const Block &block);
+    MerkleTree(const Transactions_t &transactions);
 
+    uint160_t get_root();
     MerkleProof get_proof(std::vector<uint160_t> &txids);
 };
 
@@ -45,6 +46,6 @@ class Prover
     std::vector<MerkleTree> trees;
 
 public:
-    void add_tree(Block &block);
+    uint160_t add_tree(const Transactions_t &transactions);
     MerkleProof get_proof(std::vector<uint160_t> &txids, size_t block_id);
 };
