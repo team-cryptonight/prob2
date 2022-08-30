@@ -52,17 +52,16 @@ std::ostream &operator<<(std::ostream &os, const uint160_t &i160)
 // Transaction
 Transaction::Transaction(const uint160_t id, const uint8_t *data) : id(id)
 {
-    for (int i = 0; i < 108; i++)
-    {
-        this->data[i] = data[i];
-    }
+    memcpy(this->data, data, TX_DATA_BYTE_LENGTH);
 }
 
 Transaction::Transaction(const Transaction &other) : Transaction(other.id, other.data) {}
 
 // Block
-Block::Block(uint160_t &hash_value, Transactions_t &transactions) : block_id(next_block_id++), hash_value(hash_value), transactions(transactions)
+Block::Block(uint160_t &hash_value, uint160_t &merkle_root, Transactions_t &transactions)
+    : block_id(next_block_id), hash_value(hash_value), merkle_root(merkle_root), transactions(transactions)
 {
+    next_block_id++;
 }
 
 uint160_t Block::next_block_id = 0;
