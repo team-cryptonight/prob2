@@ -13,7 +13,7 @@ struct uint160_t {
     uint160_t() = default;
     uint160_t(uint32_t n);
     uint160_t(const std::vector<uint8_t> &vch);
-    uint160_t(const uint160_t&) = default;
+    uint160_t(const uint160_t &other);
     uint160_t operator++(int x);
 
     bool operator==(const uint160_t &other);

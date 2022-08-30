@@ -17,6 +17,11 @@ uint160_t::uint160_t(const std::vector<uint8_t> &vch)
     memcpy(bytes, vch.data(), sizeof(bytes));
 }
 
+uint160_t::uint160_t(const uint160_t &other)
+{
+    memcpy(bytes, other.bytes, sizeof(bytes));
+}
+
 uint160_t uint160_t::operator++(int x)
 {
     for (auto &byte: bytes)
