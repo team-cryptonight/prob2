@@ -45,12 +45,11 @@ std::ostream &
 operator<<(std::ostream &os, const uint160_t &i160)
 {
     os << std::setfill('0') 
-       << std::setw(8) 
        << std::hex;
 
-    for (int offset = 0; offset < 20; offset += 4)
+    for (int offset = 16; offset >= 0; offset -= 4)
     {
-        os << *reinterpret_cast<const uint32_t *>(i160.bytes + offset);
+        os << std::setw(8) << *reinterpret_cast<const uint32_t *>(i160.bytes + offset);
     }
 
     return os;
