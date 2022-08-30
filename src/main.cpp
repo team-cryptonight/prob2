@@ -2,9 +2,12 @@
 #include <random>
 #include <iostream>
 
+#include "cryptopp/sha3.h"
+
 #include "blockchain.h"
 #include "blockchain_type.h"
 #include "base58.h"
+#include "merkle_tree.h"
 
 union RandomData
 {
@@ -14,7 +17,10 @@ union RandomData
 
 Transactions_t& generate_random_transactions(Transactions_t &transactions, std::mt19937 &gen)
 {
-    uint32_t cnt = 0;
+    std::vector<uint8_t> vch;
+    vch.reserve(20);
+
+    CryptoPP::SHA3_256 hash;
 
     RandomData random_data;
     for (auto &transaction: transactions)
@@ -23,7 +29,12 @@ Transactions_t& generate_random_transactions(Transactions_t &transactions, std::
         {
             word = gen();
         }
-        transaction = Transaction(cnt++, random_data.bytes);
+
+        hash.Update(random_data.bytes, 108);
+        hash.TruncatedFinal(vch.data(), TRUNCATE_BYTE_LENGTH);
+
+        uint160_t txid(vch);
+        transaction = Transaction(txid, random_data.bytes);
     }
 
     return transactions;
@@ -33,41 +44,24 @@ int main()
 {
     std::mt19937 gen(823);
 
-    uint32_t cnt = 0;
     RandomData random_data;
 
     Transactions_t transactions;
 
-    transactions = generate_random_transactions(transactions, gen);
-    Block genesis_block = generate_genesis_block(transactions);
+    Prover prover;
 
     transactions = generate_random_transactions(transactions, gen);
-    Block first_block = generate_next_block(genesis_block, transactions);
+    Block genesis_block = generate_genesis_block(transactions, prover);
 
     transactions = generate_random_transactions(transactions, gen);
-    Block second_block = generate_next_block(first_block, transactions);
+    Block first_block = generate_next_block(genesis_block, transactions, prover);
 
-    transactions = generate_random_transactions(transactions, gen);
-    Block third_block = generate_next_block(second_block, transactions);
+    std::vector<Transaction> transactions_to_verify;
 
-    std::cout << second_block.hash_value << std::endl;
-    std::cout << third_block.hash_value << std::endl;
+    transactions_to_verify.push_back(first_block.transactions[3]);
+    transactions_to_verify.push_back(first_block.transactions[127]);
 
-    std::cout << verify_blocks(second_block, third_block) << std::endl;
-    
-    second_block.transactions[128].data[64]++;
-
-    std::cout << verify_blocks(second_block, third_block) << std::endl;
-
-    uint x;
-    std::cin >> x;
-
-    uint160_t c(x);
-
-    std::cout << EncodeBase58(c) << std::endl;  
-    std::cout << EncodeBase58(second_block.hash_value) << std::endl;  
-
-
+    std::cout << verify_blocks(transactions_to_verify, first_block, prover) << std::endl;
 
     return 0;
 }
