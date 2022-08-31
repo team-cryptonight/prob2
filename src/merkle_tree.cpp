@@ -73,6 +73,7 @@ MerkleProof MerkleTree::get_proof(std::vector<uint160_t> &txids)
 
         index >>= 1;
 
+        // mark intermediate nodes in path as descend
         while (index > 0 && nodes[index] != MerkleProofNodeType::descend)
         {
             nodes[index] = MerkleProofNodeType::descend;
@@ -85,6 +86,7 @@ MerkleProof MerkleTree::get_proof(std::vector<uint160_t> &txids)
     std::stack<size_t> preorder_stack;
     preorder_stack.push(1);
 
+    // preorder traversal to construct proof tree
     while (!preorder_stack.empty())
     {
         size_t index = preorder_stack.top();
