@@ -6,6 +6,8 @@
 #include "cryptopp/cryptlib.h"
 #include "cryptopp/sha3.h"
 
+#include "base58.h"
+
 // uint160_t
 uint160_t::uint160_t(uint32_t n)
 {
@@ -38,13 +40,7 @@ uint160_t uint160_t::operator++(int x)
 
 std::ostream &operator<<(std::ostream &os, const uint160_t &i160)
 {
-    os << std::setfill('0')
-       << std::hex;
-
-    for (int offset = 16; offset >= 0; offset -= 4)
-    {
-        os << std::setw(8) << *reinterpret_cast<const uint32_t *>(i160.bytes + offset);
-    }
+    os << EncodeBase58(i160);
 
     return os;
 }
