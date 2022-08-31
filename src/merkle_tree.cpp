@@ -53,7 +53,21 @@ MerkleProof MerkleTree::get_proof(std::vector<uint160_t> &txids)
 
     for (auto &txid : txids)
     {
-        size_t index = txid_to_index.at(txid);
+        auto it = txid_to_index.find(txid);
+
+        // txid not found; wrong block
+        if (it == txid_to_index.end()) {
+            // return empty proof
+            uint160_t u0;
+
+            proof.proof_tree.emplace(MerkleProofNodeType::skip, MerkleProofNodeType::skip);
+            proof.skipped_hashes.push(u0);
+            proof.skipped_hashes.push(u0);
+
+            return proof;
+        }
+
+        size_t index = it->second;
         index_to_txid_order.emplace(index, tx_cnt);
         nodes[index] = MerkleProofNodeType::verify;
 
