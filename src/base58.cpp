@@ -22,6 +22,11 @@ std::string EncodeBase58(const uint160_t &input)
             break;
     }
 
+    if (zeroes == 20)
+    {
+        return "1";
+    }
+
     // Allocate enough space in big-endian base58 representation.
     int size = (20 - zeroes) * 138 / 100 + 1; // log(256) / log(58), rounded up.
     unsigned char b58[size] = {
