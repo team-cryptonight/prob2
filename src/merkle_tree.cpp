@@ -11,8 +11,7 @@ MerkleTree::MerkleTree(const Transactions_t &transactions)
 {
     CryptoPP::SHA3_256 hash;
 
-    std::vector<uint8_t> vch;
-    vch.reserve(TRUNCATE_BYTE_LENGTH);
+    uint160_t hash_value;
 
     size_t index = NUM_TX_PER_BLOCK;
 
@@ -20,19 +19,19 @@ MerkleTree::MerkleTree(const Transactions_t &transactions)
     {
         hash.Update(transaction.id.bytes, sizeof(transaction.id.bytes));
         hash.Update(transaction.data, sizeof(transaction.data));
-        hash.TruncatedFinal(vch.data(), TRUNCATE_BYTE_LENGTH);
+        hash.TruncatedFinal(hash_value.bytes, TRUNCATE_BYTE_LENGTH);
 
         txid_to_index.emplace(transaction.id, index);
-        tree[index++] = uint160_t(vch);
+        tree[index++] = hash_value;
     }
 
     for (index = NUM_TX_PER_BLOCK - 1; index > 0; index--)
     {
         hash.Update(tree[index << 1].bytes, UINT160_BYTE_LENGTH);
         hash.Update(tree[(index << 1) + 1].bytes, UINT160_BYTE_LENGTH);
-        hash.TruncatedFinal(vch.data(), TRUNCATE_BYTE_LENGTH);
+        hash.TruncatedFinal(hash_value.bytes, TRUNCATE_BYTE_LENGTH);
 
-        tree[index] = uint160_t(vch);
+        tree[index] = hash_value;
     }
 }
 

@@ -9,14 +9,9 @@
 #include "base58.h"
 
 // uint160_t
-uint160_t::uint160_t(uint32_t n)
+uint160_t::uint160_t(const uint32_t n)
 {
     *reinterpret_cast<uint32_t *>(bytes) = n;
-}
-
-uint160_t::uint160_t(const std::vector<uint8_t> &vch)
-{
-    memcpy(bytes, vch.data(), sizeof(bytes));
 }
 
 uint160_t::uint160_t(const uint160_t &other)
@@ -38,9 +33,9 @@ uint160_t uint160_t::operator++(int x)
     return *this;
 }
 
-std::ostream &operator<<(std::ostream &os, const uint160_t &i160)
+std::ostream &operator<<(std::ostream &os, const uint160_t &u160)
 {
-    os << EncodeBase58(i160);
+    os << EncodeBase58(u160);
 
     return os;
 }
@@ -66,6 +61,8 @@ uint160_t Block::hash_block()
 {
     CryptoPP::SHA3_256 hash;
 
+    uint160_t ret;
+
     hash.Update(static_cast<const CryptoPP::byte *>(block_id.bytes), sizeof(block_id.bytes));
     hash.Update(static_cast<const CryptoPP::byte *>(hash_value.bytes), sizeof(hash_value.bytes));
     hash.Update(static_cast<const CryptoPP::byte *>(merkle_root.bytes), sizeof(merkle_root.bytes));
@@ -76,10 +73,8 @@ uint160_t Block::hash_block()
         hash.Update(static_cast<const CryptoPP::byte *>(transaction.data), sizeof(transaction.data));
     }
 
-    std::vector<uint8_t> vch = std::vector<uint8_t>();
-    vch.reserve(TRUNCATE_BYTE_LENGTH);
 
-    hash.TruncatedFinal((CryptoPP::byte *)(vch.data()), TRUNCATE_BYTE_LENGTH);
+    hash.TruncatedFinal(static_cast<CryptoPP::byte *>(ret.bytes), TRUNCATE_BYTE_LENGTH);
 
-    return uint160_t(vch);
+    return ret;
 }

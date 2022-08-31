@@ -15,18 +15,18 @@ struct uint160_t {
     uint8_t bytes[UINT160_BYTE_LENGTH] = {0, };
 
     uint160_t() = default;
-    uint160_t(uint32_t n);
-    uint160_t(const std::vector<uint8_t> &vch);
+    uint160_t(const uint32_t n);
     uint160_t(const uint160_t &other);
     uint160_t operator++(int x);
 
+    // https://github.com/bitcoin/bitcoin/blob/master/src/uint256.h 
     inline int compare_with(const uint160_t &other) const { return memcmp(bytes, other.bytes, sizeof(bytes)); }
 
     friend inline bool operator==(const uint160_t &a, const uint160_t &b) { return a.compare_with(b) == 0; }
     friend inline bool operator!=(const uint160_t &a, const uint160_t &b) { return a.compare_with(b) != 0; }
     friend inline bool operator<(const uint160_t &a, const uint160_t &b) { return a.compare_with(b) < 0; }
 
-    friend std::ostream& operator<<(std::ostream &os, const uint160_t &i160);
+    friend std::ostream& operator<<(std::ostream &os, const uint160_t &u160);
 };
 
 struct Transaction {
