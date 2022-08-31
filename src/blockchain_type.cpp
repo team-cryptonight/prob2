@@ -68,6 +68,7 @@ uint160_t Block::hash_block()
 
     hash.Update(static_cast<const CryptoPP::byte *>(block_id.bytes), sizeof(block_id.bytes));
     hash.Update(static_cast<const CryptoPP::byte *>(hash_value.bytes), sizeof(hash_value.bytes));
+    hash.Update(static_cast<const CryptoPP::byte *>(merkle_root.bytes), sizeof(merkle_root.bytes));
 
     for (auto &transaction : transactions)
     {
