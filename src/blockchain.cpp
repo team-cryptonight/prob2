@@ -28,6 +28,7 @@ uint160_t descend(std::vector<Transaction> &transactions, MerkleProof &proof, Cr
     uint160_t left_hash;
     uint160_t right_hash;
 
+    // calculate value of the left child
     switch(proof_node.first)
     {
     case MerkleProofNodeType::descend:
@@ -52,6 +53,7 @@ uint160_t descend(std::vector<Transaction> &transactions, MerkleProof &proof, Cr
         break;
     }
 
+    // calculate value of the right child
     switch(proof_node.second)
     {
     case MerkleProofNodeType::descend:
@@ -83,7 +85,7 @@ uint160_t descend(std::vector<Transaction> &transactions, MerkleProof &proof, Cr
     return merkle_root;
 }
 
-bool verify_blocks(std::vector<Transaction> &transactions, const Block &block, Prover &prover)
+bool verify_transactions(std::vector<Transaction> &transactions, const Block &block, Prover &prover)
 {
     std::vector<uint160_t> txids;
     for (auto &transaction : transactions)
@@ -91,6 +93,7 @@ bool verify_blocks(std::vector<Transaction> &transactions, const Block &block, P
         txids.push_back(transaction.id);
     }
 
+    // use 32 LSBs of uint160_t as size_t
     MerkleProof proof = prover.get_proof(txids, *reinterpret_cast<const size_t *>(block.block_id.bytes));
 
     CryptoPP::SHA3_256 hash;

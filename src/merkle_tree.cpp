@@ -11,8 +11,7 @@ MerkleTree::MerkleTree(const Transactions_t &transactions)
 {
     CryptoPP::SHA3_256 hash;
 
-    std::vector<uint8_t> vch;
-    vch.reserve(TRUNCATE_BYTE_LENGTH);
+    uint160_t hash_value;
 
     size_t index = NUM_TX_PER_BLOCK;
 
@@ -20,19 +19,19 @@ MerkleTree::MerkleTree(const Transactions_t &transactions)
     {
         hash.Update(transaction.id.bytes, sizeof(transaction.id.bytes));
         hash.Update(transaction.data, sizeof(transaction.data));
-        hash.TruncatedFinal(vch.data(), TRUNCATE_BYTE_LENGTH);
+        hash.TruncatedFinal(hash_value.bytes, TRUNCATE_BYTE_LENGTH);
 
         txid_to_index.emplace(transaction.id, index);
-        tree[index++] = uint160_t(vch);
+        tree[index++] = hash_value;
     }
 
     for (index = NUM_TX_PER_BLOCK - 1; index > 0; index--)
     {
         hash.Update(tree[index << 1].bytes, UINT160_BYTE_LENGTH);
         hash.Update(tree[(index << 1) + 1].bytes, UINT160_BYTE_LENGTH);
-        hash.TruncatedFinal(vch.data(), TRUNCATE_BYTE_LENGTH);
+        hash.TruncatedFinal(hash_value.bytes, TRUNCATE_BYTE_LENGTH);
 
-        tree[index] = uint160_t(vch);
+        tree[index] = hash_value;
     }
 }
 
@@ -54,12 +53,27 @@ MerkleProof MerkleTree::get_proof(std::vector<uint160_t> &txids)
 
     for (auto &txid : txids)
     {
-        size_t index = txid_to_index.at(txid);
+        auto it = txid_to_index.find(txid);
+
+        // txid not found; wrong block
+        if (it == txid_to_index.end()) {
+            // return empty proof
+            uint160_t u0;
+
+            proof.proof_tree.emplace(MerkleProofNodeType::skip, MerkleProofNodeType::skip);
+            proof.skipped_hashes.push(u0);
+            proof.skipped_hashes.push(u0);
+
+            return proof;
+        }
+
+        size_t index = it->second;
         index_to_txid_order.emplace(index, tx_cnt);
         nodes[index] = MerkleProofNodeType::verify;
 
         index >>= 1;
 
+        // mark intermediate nodes in path as descend
         while (index > 0 && nodes[index] != MerkleProofNodeType::descend)
         {
             nodes[index] = MerkleProofNodeType::descend;
@@ -72,6 +86,7 @@ MerkleProof MerkleTree::get_proof(std::vector<uint160_t> &txids)
     std::stack<size_t> preorder_stack;
     preorder_stack.push(1);
 
+    // preorder traversal to construct proof tree
     while (!preorder_stack.empty())
     {
         size_t index = preorder_stack.top();
@@ -101,7 +116,7 @@ MerkleProof MerkleTree::get_proof(std::vector<uint160_t> &txids)
 // Prover
 uint160_t Prover::add_tree(const Transactions_t &transactions)
 {
-    trees.push_back(MerkleTree(transactions));
+    trees.emplace_back(MerkleTree(transactions));
     return trees.back().get_root();
 }
 
