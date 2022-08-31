@@ -83,7 +83,7 @@ uint160_t descend(std::vector<Transaction> &transactions, MerkleProof &proof, Cr
     return merkle_root;
 }
 
-bool verify_blocks(std::vector<Transaction> &transactions, const Block &block, Prover &prover)
+bool verify_transactions(std::vector<Transaction> &transactions, const Block &block, Prover &prover)
 {
     std::vector<uint160_t> txids;
     for (auto &transaction : transactions)
