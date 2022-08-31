@@ -58,6 +58,9 @@ int main()
 
     std::vector<Transaction> transactions_to_verify;
 
+    std::cout << first_block.hash_value << std::endl;
+    std::cout << first_block.merkle_root << std::endl;
+
     transactions_to_verify.push_back(first_block.transactions[3]);
     transactions_to_verify.push_back(first_block.transactions[127]);
 
