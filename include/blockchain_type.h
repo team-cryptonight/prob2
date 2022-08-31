@@ -12,7 +12,7 @@
 #define TX_DATA_BYTE_LENGTH 108
 
 struct uint160_t {
-    uint8_t bytes[UINT160_BYTE_LENGTH] = {0, };
+    uint8_t bytes[UINT160_BYTE_LENGTH] = {0, };  // bytes[0] is the least significant byte
 
     uint160_t() = default;
     uint160_t(const uint32_t n);
