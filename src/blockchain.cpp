@@ -45,7 +45,7 @@ uint160_t descend(std::vector<Transaction> &transactions, MerkleProof &proof, Cr
 
         hash.Update(static_cast<const CryptoPP::byte *>(transaction.id.bytes), UINT160_BYTE_LENGTH);
         hash.Update(transaction.data, sizeof(transaction.data));
-        hash.TruncatedFinal(left_hash.bytes, TRUNCATE_BYTE_LENGTH);
+        hash_helper(left_hash, hash);
 
         break;
     }
@@ -70,7 +70,7 @@ uint160_t descend(std::vector<Transaction> &transactions, MerkleProof &proof, Cr
 
         hash.Update(static_cast<const CryptoPP::byte *>(transaction.id.bytes), UINT160_BYTE_LENGTH);
         hash.Update(transaction.data, sizeof(transaction.data));
-        hash.TruncatedFinal(right_hash.bytes, TRUNCATE_BYTE_LENGTH);
+        hash_helper(right_hash, hash);
 
         break;
     }
@@ -80,7 +80,7 @@ uint160_t descend(std::vector<Transaction> &transactions, MerkleProof &proof, Cr
 
     hash.Update(left_hash.bytes, UINT160_BYTE_LENGTH);
     hash.Update(right_hash.bytes, UINT160_BYTE_LENGTH);
-    hash.TruncatedFinal(merkle_root.bytes, TRUNCATE_BYTE_LENGTH);
+    hash_helper(merkle_root, hash);
 
     return merkle_root;
 }

@@ -74,7 +74,19 @@ uint160_t Block::hash_block()
     }
 
 
-    hash.TruncatedFinal(static_cast<CryptoPP::byte *>(ret.bytes), TRUNCATE_BYTE_LENGTH);
+    hash_helper(ret, hash);
 
     return ret;
+}
+
+void hash_helper(uint160_t &u160, CryptoPP::SHA3_256 &hash)
+{
+    uint8_t digest[32];
+
+    hash.Final(digest);
+
+    for (int offset = 12; offset < 32; offset++)
+    {
+        u160.bytes[31 - offset] = digest[offset];
+    }
 }

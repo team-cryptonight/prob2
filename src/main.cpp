@@ -30,7 +30,7 @@ Transactions_t& generate_random_transactions(Transactions_t &transactions, std::
         }
 
         hash.Update(random_data.bytes, 108);
-        hash.TruncatedFinal(txid.bytes, TRUNCATE_BYTE_LENGTH);
+        hash_helper(txid, hash);
 
         transaction = Transaction(txid, random_data.bytes);
     }

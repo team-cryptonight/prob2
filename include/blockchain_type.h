@@ -6,6 +6,8 @@
 #include <iostream>
 #include <vector>
 
+#include "cryptopp/sha3.h"
+
 #define UINT160_BYTE_LENGTH 20
 #define TRUNCATE_BYTE_LENGTH 20
 #define NUM_TX_PER_BLOCK 8192
@@ -52,3 +54,5 @@ struct Block {
 
     uint160_t hash_block();
 };
+
+void hash_helper(uint160_t &u160, CryptoPP::SHA3_256 &hash);

@@ -19,7 +19,7 @@ MerkleTree::MerkleTree(const Transactions_t &transactions)
     {
         hash.Update(transaction.id.bytes, sizeof(transaction.id.bytes));
         hash.Update(transaction.data, sizeof(transaction.data));
-        hash.TruncatedFinal(hash_value.bytes, TRUNCATE_BYTE_LENGTH);
+        hash_helper(hash_value, hash);
 
         txid_to_index.emplace(transaction.id, index);
         tree[index++] = hash_value;
@@ -29,7 +29,7 @@ MerkleTree::MerkleTree(const Transactions_t &transactions)
     {
         hash.Update(tree[index << 1].bytes, UINT160_BYTE_LENGTH);
         hash.Update(tree[(index << 1) + 1].bytes, UINT160_BYTE_LENGTH);
-        hash.TruncatedFinal(hash_value.bytes, TRUNCATE_BYTE_LENGTH);
+        hash_helper(hash_value, hash);
 
         tree[index] = hash_value;
     }
