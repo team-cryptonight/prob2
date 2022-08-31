@@ -116,7 +116,7 @@ MerkleProof MerkleTree::get_proof(std::vector<uint160_t> &txids)
 // Prover
 uint160_t Prover::add_tree(const Transactions_t &transactions)
 {
-    trees.push_back(MerkleTree(transactions));
+    trees.emplace_back(MerkleTree(transactions));
     return trees.back().get_root();
 }
 
